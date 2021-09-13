@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nomero
+spec:
+  selector:
+    matchLabels:
+      app: nomero
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: nomero
+    spec:
+      containers:
+        - name: nomero
+          image: us.gcr.io/rocketseat-42/nomero:latest
+          env:
+            - name: ROCKET_SECRET_KEY
+              value: "EfmQ/isJo/z2JUfnc+MfmvT9Bq3y+lhyD5zg6dKMJyA="
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              memory: 24Mi
+              cpu: 40m
+            limits:
+              memory: 32Mi
+              cpu: 80m

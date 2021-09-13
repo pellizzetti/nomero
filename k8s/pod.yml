@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nomero
+  labels:
+    app: web
+spec:
+  containers:
+    - name: nomero
+      image: us.gcr.io/rocketseat-42/nomero:latest
+      env:
+        - name: ROCKET_SECRET_KEY
+          value: "EfmQ/isJo/z2JUfnc+MfmvT9Bq3y+lhyD5zg6dKMJyA="
+      ports:
+        - containerPort: 8000
