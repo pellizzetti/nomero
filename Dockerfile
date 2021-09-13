@@ -26,4 +26,6 @@ USER ${USER}
 
 COPY --from=builder --chown=${USER}:${USER} /nomero/target/release/nomero ./server
 
+EXPOSE 8000
+
 ENTRYPOINT ["/bin/server"]

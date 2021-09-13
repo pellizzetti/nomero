@@ -1,0 +1,50 @@
+# This workflow will build a docker container, publish it to Google Container Registry.
+name: Build and Deploy
+
+on:
+  push:
+    tags:
+    - '*'
+
+# Environment variables available to all jobs and steps in this workflow
+env:
+  GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+  IMAGE: nomero
+  REGISTRY_HOSTNAME: us.gcr.io
+
+jobs:
+  setup-build-publish:
+    name: Setup, build and publish
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Set tag
+    - name: Set tag
+      run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
+
+    # Setup gcloud CLI
+    - uses: google-github-actions/setup-gcloud@master
+      with:
+        project_id: ${{ secrets.GCP_PROJECT }}
+        service_account_key: ${{ secrets.GCP_CONTAINER_PUSHER }}
+        export_default_credentials: true
+
+    # Configure docker to use the gcloud command-line tool as a credential helper
+    - name: Configure docker client
+      run: gcloud auth configure-docker
+
+    # Build the Docker image
+    - name: Build image
+      run: |
+        DOCKER_BUILDKIT=1 docker build \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --build-arg APP_VERSION="$GITHUB_SHA" \
+          -t "$REGISTRY_HOSTNAME"/"$GCP_PROJECT"/"$IMAGE":latest \
+          -t "$REGISTRY_HOSTNAME"/"$GCP_PROJECT"/"$IMAGE":"$RELEASE_VERSION" .
+
+    # Push the Docker image to Google Container Registry
+    - name: Publish image
+      run: docker push "$REGISTRY_HOSTNAME"/"$GCP_PROJECT"/"$IMAGE"
